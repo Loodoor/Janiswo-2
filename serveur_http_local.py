@@ -1,4 +1,4 @@
-#*-* coding:Utf-8*-
+# -*-coding: utf8-*
 
 import http.server
 import socketserver

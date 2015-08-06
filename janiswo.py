@@ -1,3 +1,5 @@
+# -*-coding: utf8-*
+
 import analyser as als
 import sys
 import os
@@ -19,7 +21,15 @@ def post_mortem(exc_type, exc_val, exc_tb):
     #on affiche l'exception histoire de savoir ce qu'on debug
     print("\n" + str(exc_type) + " :: " + str(exc_val) + "\n" * 2)
     print(traceback.format_exception(exc_type, exc_val, exc_tb)[-2])
-    input("\n\nAppuyez sur Entrer pour relancer Janiswö ...")
+    waiter = input("\n\nAppuyez sur Entrer pour relancer Janiswö ... ")
+    if waiter == 'explain me':
+        print("\n\t\t\t\tTraceback complet\n")
+        print("".join(traceback.format_exception(exc_type, exc_val, exc_tb)))
+        input('... ')
+    elif waiter == "repear":
+        if 'C:/Python34/lib/socket.py'.lower() in traceback.format_exception(exc_type, exc_val, exc_tb)[-4].lower():
+            with open("c:/python34/lib/socket.py", "w") as socket_file:
+                socket_file.seek()
     os.system('cls')
     subprocess.Popen(['py', '-3.4', 'janiswo.py'])
 

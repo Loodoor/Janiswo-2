@@ -1,3 +1,5 @@
+# -*-coding: utf8-*
+
 import pickle
 import os
 import sys
@@ -11,6 +13,7 @@ import webbrowser as wb
 import serveur_http_local as srvweb
 import platform as p
 import socket
+import web_page
 
 
 def is_path(path):
@@ -46,7 +49,8 @@ class Speaker():
             'avaible_bck',
             'rw',
             'sudo',
-            'unsudo'
+            'unsudo',
+            'myweb'
         ]
         self.continuer = 1
         self.i = "In[0]: "
@@ -117,6 +121,9 @@ class Speaker():
             self.cl(self.e_cl)
             print(self.o + "Erreur : l'action demandée n'est pas valide")
         self.cl(self.default_cl)
+
+    def myweb(self):
+        web_page.main()
 
     def curdir(self):
         self.cl(self.o_cl)
