@@ -14,6 +14,7 @@ import serveur_http_local as srvweb
 import platform as p
 import socket
 import web_page
+import proxies
 
 
 def is_path(path):
@@ -35,6 +36,7 @@ class Speaker():
             'wsearch',
             'wsimage',
             'curdir',
+            'proxy',
             'whoami',
             'restart',
             'clear_cmd',
@@ -50,7 +52,8 @@ class Speaker():
             'rw',
             'sudo',
             'unsudo',
-            'myweb'
+            'myweb',
+            'modules'
         ]
         self.continuer = 1
         self.i = "In[0]: "
@@ -60,7 +63,7 @@ class Speaker():
         self.name = name
         self.e_cl = Fore.RED
         self.i_cl = Fore.GREEN
-        self.o_cl = Fore.MAGENTA
+        self.o_cl = Fore.CYAN
         self.s_cl = Fore.BLUE
         self.a_cl = Fore.YELLOW
         self.default_cl = Fore.WHITE
@@ -71,10 +74,12 @@ class Speaker():
         self.image_search = "http://google.fr/search?tbm=isch&gws_rd=ssl&q="
         self.welcome_home()
 
-    def cls(self):
+    @staticmethod
+    def cls():
         os.system('cls')
 
-    def cl(self, nom):
+    @staticmethod
+    def cl(nom):
         # on évite print à cause du '\n' inséré automatiquement
         # sys.stdout.write(self.colours[nom])
         init()
@@ -122,8 +127,13 @@ class Speaker():
             print(self.o + "Erreur : l'action demandée n'est pas valide")
         self.cl(self.default_cl)
 
-    def myweb(self):
+    @staticmethod
+    def myweb():
         web_page.main()
+
+    @staticmethod
+    def proxy():
+        proxies.main()
 
     def curdir(self):
         self.cl(self.o_cl)
@@ -156,6 +166,13 @@ class Speaker():
         else:
             self.cl(self.e_cl)
             print(self.o + "Erreur : le répertoire demandé n'existe pas !")
+        self.cl(self.default_cl)
+
+    def modules(self):
+        self.cl(self.o_cl)
+        modulenames = set(sys.modules) & set(globals())
+        for i in modulenames:
+            print(self.o + str(i) + " a été initialisé")
         self.cl(self.default_cl)
 
     def sudo(self):
@@ -215,12 +232,7 @@ class Speaker():
         self.cl(self.default_cl)
         self.cl(self.default_cl)
         print(self.project_name + " " + self.version + "\n")
-        print('La syntaxe de Python(3) est acceptée pour programmer les actions des commandes\n')
         self.load_stx(self.name)
-        modulenames = set(sys.modules) & set(globals())
-        for i in modulenames:
-            print("- " + str(i) + " a été initialisé")
-        print()
 
     def clear_cmd(self):
         self.cl(self.i_cl)

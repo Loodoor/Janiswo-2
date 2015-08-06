@@ -28,8 +28,15 @@ def post_mortem(exc_type, exc_val, exc_tb):
         input('... ')
     elif waiter == "repear":
         if 'C:/Python34/lib/socket.py'.lower() in traceback.format_exception(exc_type, exc_val, exc_tb)[-4].lower():
-            with open("c:/python34/lib/socket.py", "w") as socket_file:
-                socket_file.seek()
+            #on a eu un problème avec le module socket de python,
+            #on doit le réparer
+            with open("c:/python34/lib/socket.py", "r+") as socket_file:
+                tmp = socket_file.readlines()
+                print("Ligne problématique : " + tmp[460])
+                tmp[460][-7:] = ''
+                print("Ligne réparée : " + tmp[460])
+                for i in tmp:
+                    socket_file.write(i + "\n")
     os.system('cls')
     subprocess.Popen(['py', '-3.4', 'janiswo.py'])
 
