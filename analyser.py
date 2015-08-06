@@ -15,6 +15,8 @@ import platform as p
 import socket
 import web_page
 import proxies
+import speech_recognition as spr
+import speech_reco
 
 
 def is_path(path):
@@ -27,6 +29,7 @@ class Speaker():
     def __init__(self, os_logo, name='syntaxe_als'):
         self.commands = {}
         self.project_name = "Janiswö"
+        self.recognizer = speech_reco.SpeechRecognition()
         self.os_logo = os_logo
         self.version = '0.0.1-a'
         self.location = os.path.dirname(os.path.abspath(__file__)) + "\\"
@@ -44,6 +47,7 @@ class Speaker():
             'dcode',
             'backup',
             'sharef',
+            'speech',
             'chcl',
             'chbr',
             'load',
@@ -72,6 +76,9 @@ class Speaker():
         self.current_backup = "std"
         self.basic_search = "http://google.fr/search?gws_rd=ssl&q="
         self.image_search = "http://google.fr/search?tbm=isch&gws_rd=ssl&q="
+        self.speech_ = False
+        self.recognizer = speech_reco.SpeechRecognition(name=self.project_name)
+        self.thk = speech_reco.Think()
         self.welcome_home()
 
     @staticmethod
@@ -84,6 +91,14 @@ class Speaker():
         # sys.stdout.write(self.colours[nom])
         init()
         print('%s' % nom, end='')
+
+    @staticmethod
+    def myweb():
+        web_page.main()
+
+    @staticmethod
+    def proxy():
+        proxies.main()
 
     def chbr(self):
         self.cl(self.i_cl)
@@ -126,14 +141,6 @@ class Speaker():
             self.cl(self.e_cl)
             print(self.o + "Erreur : l'action demandée n'est pas valide")
         self.cl(self.default_cl)
-
-    @staticmethod
-    def myweb():
-        web_page.main()
-
-    @staticmethod
-    def proxy():
-        proxies.main()
 
     def curdir(self):
         self.cl(self.o_cl)
@@ -347,6 +354,19 @@ class Speaker():
             print(self.o + "La commande n'existe pas")
         self.cl(self.default_cl)
 
+    def speech(self, arg=''):
+        self.cl(self.i_cl)
+        if arg == '':
+            arg = input(self.i + "[On|Off] : ")
+        self.cl(self.o_cl)
+        if arg.lower() == 'on':
+            self.speech_ = True
+            print(self.o + "Le TTS et la speech recognition sont désormais actif")
+        elif arg.lower() == 'off':
+            self.speech_ = False
+            print(self.o + "Le TTS et la speech recognition sont désormais inactif")
+        self.cl(self.default_cl)
+
     def try_recognizing(self, texte):
         possibility = []
         for j in self.builtins_methode:
@@ -469,13 +489,18 @@ class Speaker():
     def start(self):
         while self.continuer:
             self.cl(self.i_cl)
-            input_usr = input(self.i)
+            if self.speech_:
+                print(self.i, end='')
+                input_usr = self.recognizer.recognize()
+                print(input_usr)
+            else:
+                input_usr = input(self.i)
             self.cl(self.default_cl)
             if input_usr == 'exit' or input_usr == 'quit':
                 #on doit s'en aller #commantaireInutile
                 break
             #Zone des commandes à argument(s) unique ou multiples
-            elif input_usr[:4] == 'load' and len(input_usr.split(' ')) == 2:
+            elif input_usr[:4] == 'load' and len(input_usr.split(' ')) >= 2:
                 #on charge un backup
                 self.load(arg=input_usr.split(' ')[1])
             elif input_usr[:7] == 'wsearch' and len(input_usr.split(' ')) >= 2:
@@ -484,12 +509,15 @@ class Speaker():
             elif input_usr[:7] == 'wsimage' and len(input_usr.split(' ')) >= 2:
                 #recherche par image
                 self.wsimage(arg=' '.join(input_usr.split(' ')[1:]))
-            elif input_usr[:5] == 'dcode' and len(input_usr.split(' ')) == 2:
+            elif input_usr[:5] == 'dcode' and len(input_usr.split(' ')) >= 2:
                 #on veut voir le code d'une commande
                 self.dcode(arg=input_usr.split(' ')[1])
-            elif input_usr[:2] == 'rw' and len(input_usr.split(' ')) == 2:
+            elif input_usr[:2] == 'rw' and len(input_usr.split(' ')) >= 2:
                 #on veut changer le code d'une commande
                 self.rw(arg=input_usr.split(' ')[1])
+            elif input_usr[:6] == 'speech' and len(input_usr.split(' ')) >= 2:
+                #on veut changer l'etat de speech
+                self.speech(arg=input_usr.split(' ')[1])
             #-----------------------------------------------------
             elif input_usr[:2] == '::' or not input_usr or input_usr == '\n':
                 #commentaire
@@ -500,7 +528,7 @@ class Speaker():
             elif input_usr not in self.commands.keys() and input_usr not in self.builtins_methode:
                 #si on ne reconnait pas la commande
                 recognize = self.try_recognizing(input_usr)
-                if not recognize:
+                if not recognize and not self.speech_:
                     self.new(input_usr)
                 else:
                     self.launch(recognize)
