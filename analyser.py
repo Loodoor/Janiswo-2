@@ -19,6 +19,7 @@ import speech_reco
 import enasu
 from threading import Thread
 import remind
+import tkinter
 
 
 def is_path(path):
@@ -44,6 +45,7 @@ class Speaker():
             'whoami',
             'remind',
             'lst_reminds',
+            'memo',
             'restart',
             'clear_cmd',
             'cls',
@@ -102,6 +104,18 @@ class Speaker():
     @staticmethod
     def myweb():
         web_page.main()
+
+    @staticmethod
+    def create_tk_memo():
+        fen = tkinter.Tk()
+        fen.title("Mémo Janiswö")
+        tx_entry = tkinter.Text(fen, width=40, height=10)
+        btn = tkinter.Button(fen, text="Revenir à Janiswö", command=fen.quit)
+        tx_entry.pack()
+        tkinter.Label(fen, text="").pack()
+        btn.pack()
+        tkinter.Label(fen, text="").pack()
+        fen.mainloop()
 
     def chbr(self):
         self.cl(self.i_cl)
@@ -289,6 +303,9 @@ class Speaker():
         for k in to_test:
             print(self.o + k[0] + " : " + k[1])
         self.cl(self.default_cl)
+
+    def memo(self):
+        self.create_tk_memo()
 
     def welcome_home(self):
         self.cl(self.s_cl)
