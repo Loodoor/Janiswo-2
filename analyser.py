@@ -17,6 +17,8 @@ import web_page
 import speech_recognition as spr
 import speech_reco
 import enasu
+from threading import Thread
+import remind
 
 
 def is_path(path):
@@ -40,6 +42,8 @@ class Speaker():
             'wsimage',
             'curdir',
             'whoami',
+            'remind',
+            'lst_reminds',
             'restart',
             'clear_cmd',
             'cls',
@@ -61,6 +65,7 @@ class Speaker():
             'modules'
         ]
         self.passwords = {}
+        self.reminders = []
         self.continuer = 1
         self.i = "In[0]: "
         self.o = "Out[1]: "
@@ -174,6 +179,40 @@ class Speaker():
         self.cl(self.o_cl)
         print(self.o + "Mot de passe pour '" + cat + "' enregistré !")
         self.cl(self.default_cl)
+
+    def remind(self):
+        self.cl(self.i_cl)
+        rap = input(self.i + "Rappel > ")
+        date = input(self.i + "Quand [jj[/mm[/aaaa]]] || [hh[:mm[:ss]]] ? > ")
+        date = re.sub(r' */* ', ' ', date)
+        date = re.sub(r' *:* ', ' ', date)
+        date = date.split(' ')
+
+        self.reminders.append([rap, date])
+        self.cl(self.o_cl)
+        self.cl(self.default_cl)
+
+    def lst_reminds(self):
+        self.cl(self.o_cl)
+        for i in self.reminders:
+            print(self.o + ' '.join(i[1]) + ' : ' + i[0])
+        self.cl(self.default_cl)
+
+    def check_reminds(self):
+        #à mettre dans un thread !
+        possibilities = [
+            '%d %m %Y',
+            '%d %m',
+            '%d',
+            '%H %M %S',
+            '%H %M',
+            '%H'
+        ]
+        for i in self.reminders:
+            date = ' '.join(i[1])
+            for j in possibilities:
+                if date == time.strftime(j):
+                    remind.main(self.reminders[0], date, True)
 
     def scan(self, choix):
         self.cl(self.o_cl)
@@ -503,6 +542,8 @@ class Speaker():
         return True
 
     def start(self):
+        #de manière à checker asynchronement les reminders
+        Thread(target=self.check_reminds).start()
         while self.continuer:
             self.cl(self.i_cl)
             if self.speech_:
@@ -514,6 +555,7 @@ class Speaker():
             self.cl(self.default_cl)
             if input_usr == 'exit' or input_usr == 'quit':
                 #on doit s'en aller #commantaireInutile
+                self.save_stx(self.name)
                 break
             #Zone des commandes à argument(s) unique ou multiples
             elif input_usr[:4] == 'load' and len(input_usr.split(' ')) >= 2:
@@ -559,6 +601,10 @@ class Speaker():
         else:
             with open(self.location + "BACKUPS/" + name + self.extension, 'wb') as save_stx:
                 pickle.Pickler(save_stx).dump(self.commands)
+        with open(self.location + "reminders.pkl", "wb") as save_reminds:
+            pickle.Pickler(save_reminds).dump(self.reminders)
+        with open(self.location + "pwds.pkl", "wb") as save_pwds:
+            pickle.Pickler(save_pwds).dump(self.passwords)
 
     def load_stx(self, name='syntaxe_als'):
         if name != 'syntaxe_als':
@@ -568,3 +614,9 @@ class Speaker():
             if os.path.exists(self.location + name + self.extension):
                 with open(self.location + name + self.extension, "rb") as read_stx:
                     self.commands = pickle.Unpickler(read_stx).load()
+        if os.path.exists(self.location + "reminders.pkl"):
+            with open(self.location + "reminders.pkl", "rb") as read_reminds:
+                self.reminders = pickle.Unpickler(read_reminds).load()
+        if os.path.exists(self.location + "pwds.pkl"):
+            with open(self.location + "pwds.pkl", "rb") as read_pwds:
+                self.passwords = pickle.Unpickler(read_pwds).load()
