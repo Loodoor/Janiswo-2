@@ -14,9 +14,9 @@ import serveur_http_local as srvweb
 import platform as p
 import socket
 import web_page
-import proxies
 import speech_recognition as spr
 import speech_reco
+import enasu
 
 
 def is_path(path):
@@ -39,12 +39,13 @@ class Speaker():
             'wsearch',
             'wsimage',
             'curdir',
-            'proxy',
             'whoami',
             'restart',
             'clear_cmd',
             'cls',
             'dcode',
+            'pwds',
+            'new_pwd',
             'backup',
             'sharef',
             'speech',
@@ -59,6 +60,7 @@ class Speaker():
             'myweb',
             'modules'
         ]
+        self.passwords = {}
         self.continuer = 1
         self.i = "In[0]: "
         self.o = "Out[1]: "
@@ -95,10 +97,6 @@ class Speaker():
     @staticmethod
     def myweb():
         web_page.main()
-
-    @staticmethod
-    def proxy():
-        proxies.main()
 
     def chbr(self):
         self.cl(self.i_cl)
@@ -155,6 +153,26 @@ class Speaker():
             else:
                 self.cl(self.e_cl)
                 print(self.o + "Erreur : le répertoire demandé n'existe pas !")
+        self.cl(self.default_cl)
+
+    def pwds(self):
+        self.cl(self.o_cl)
+        print(self.o + "Liste des mots de passe enregistrés :")
+        if not self.admin:
+            for k, v in self.passwords.items():
+                print(self.o + k + " : " + v + ", base : " + v[-1])
+        else:
+            if input(self.i + "Voulez vous afficher les mots de passe en clair [o|n] ? ").lower() == 'o':
+                pass
+        self.cl(self.default_cl)
+
+    def new_pwd(self):
+        self.cl(self.i_cl)
+        cat = input(self.i + "Catégorie du mot de passe : ")
+        pwd = enasu.get_and_encrypt(self.i)
+        self.passwords[cat] = pwd
+        self.cl(self.o_cl)
+        print(self.o + "Mot de passe pour '" + cat + "' enregistré !")
         self.cl(self.default_cl)
 
     def scan(self, choix):
@@ -272,9 +290,7 @@ class Speaker():
         self.save_stx(name=self.name)
         print("\n" + "-" * 80)
         self.continuer = 0
-        self.cl(self.s_cl)
         self.cls()
-        self.cl(self.default_cl)
         subprocess.Popen(['py', '-3.4', 'janiswo.py'])
 
     def backup(self):
@@ -392,7 +408,7 @@ class Speaker():
                     possibility.append(j)
         if possibility:
             self.cl(self.i_cl)
-            if input(self.i + "Vous vouliez problablement exécuter " + possibility[0] + " [o|n] ? ").lower() == 'o':
+            if input(self.i + "Vous vouliez probablement exécuter " + possibility[0] + " [o|n] ? ").lower() == 'o':
                 self.cl(self.default_cl)
                 return possibility[0]
             self.cl(self.default_cl)
